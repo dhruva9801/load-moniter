@@ -1,0 +1,114 @@
+@if (view === 'calibrate') {
+  <app-calibration
+    (calibrationComplete)="onCalibrationComplete($event)"
+  ></app-calibration>
+}
+
+@if (view === 'dashboard') {
+  <div class="dashboard">
+
+    <h1 class="dashboard-title">Cognitive Load Monitor</h1>
+
+    <div class="agent-status" [class.connected]="keystroke.agentConnected">
+      <span class="agent-dot"></span>
+      <span class="agent-label">
+        {{ keystroke.agentConnected ? 'Agent connected' : 'Agent disconnected — run clm_agent.py' }}
+      </span>
+    </div>
+
+    <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
+
+    @if (currentFeatures) {
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Typing speed</span>
+          <span class="metric-value">{{ currentFeatures.typingSpeed | number:'1.0-0' }} kpm</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Hold time</span>
+          <span class="metric-value">{{ currentFeatures.meanHold | number:'1.0-0' }} ms</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Flight time</span>
+          <span class="metric-value">{{ currentFeatures.meanFlight | number:'1.0-0' }} ms</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Backspace rate</span>
+          <span class="metric-value">{{ currentFeatures.backspaceRate | percent:'1.0-1' }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Load score</span>
+          <span class="metric-value">{{ currentLoad | number:'1.0-3' }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- Task tracking -->
+    <div class="data-panel">
+      <h2 class="data-panel-title">Task tracking</h2>
+      <p class="task-instructions">
+        Click <strong>Start Task</strong> before you begin working,
+        then <strong>Done</strong> when you finish to rate your mental load.
+      </p>
+      <div class="data-actions">
+        <button class="btn-export" (click)="startTask()" [disabled]="taskActive">
+          {{ taskActive ? 'Task in progress...' : 'Start Task' }}
+        </button>
+        <button class="btn-dev" (click)="endTask()" [disabled]="!taskActive">
+          Done — Rate this task
+        </button>
+      </div>
+    </div>
+
+    <!-- Training data -->
+    <div class="data-panel">
+      <h2 class="data-panel-title">Training data</h2>
+
+      <div class="data-stats">
+        <span>Total rows: <strong>{{ totalCount }}</strong></span>
+        <span>Labeled rows: <strong>{{ labeledCount }}</strong></span>
+
+        @if (labeledCount < 200) {
+          <span class="goal-note">Goal: 200 labeled rows ({{ 200 - labeledCount }} to go)</span>
+        } @else {
+          <span class="goal-met">Ready to train — export and run the Python script.</span>
+        }
+      </div>
+
+      <!-- Label distribution — shows spread across low/medium/high load -->
+      <!-- This is critical: if all three numbers aren't roughly balanced you have bad training data -->
+      @if (labeledCount > 0) {
+        <div class="label-distribution">
+          <span class="dist-label">Label spread:</span>
+          <span class="dist-low">Low: {{ labelDistribution.low }}</span>
+          <span class="dist-med">Med: {{ labelDistribution.medium }}</span>
+          <span class="dist-high">High: {{ labelDistribution.high }}</span>
+        </div>
+      }
+
+      <div class="data-actions">
+        <button
+          class="btn-export"
+          (click)="dataLogger.downloadLabeledCSV()"
+          [disabled]="labeledCount === 0"
+        >
+          Export labeled CSV
+        </button>
+        <button class="btn-clear" (click)="dataLogger.clear()">
+          Clear session
+        </button>
+        <button class="btn-cancel" (click)="recalibrate()">
+          Recalibrate
+        </button>
+      </div>
+    </div>
+
+  </div>
+}
+
+@if (showTlxPrompt) {
+  <app-tlx-prompt
+    (rated)="onTlxRated($event)"
+    (skip)="onTlxSkipped()"
+  ></app-tlx-prompt>
+}

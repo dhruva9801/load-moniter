@@ -1,0 +1,47 @@
+<div class="calibration-panel">
+
+  <h2 class="calibration-title">Baseline Calibration</h2>
+
+  @if (phase === 'idle') {
+    <div class="calibration-instructions">
+      <p>
+        Before monitoring begins, we need to learn your natural typing rhythm
+        when you're relaxed. This takes about 30 seconds.
+      </p>
+      <p>
+        Click <strong>Start</strong>, then type normally — write an email,
+        take notes, anything comfortable. Don't rush or try to type differently.
+      </p>
+      <button class="btn-start" (click)="start()">Start Calibration</button>
+    </div>
+  }
+
+  @if (phase === 'running') {
+    <div class="calibration-running">
+      <p class="calibration-prompt">Type normally — just work as you usually would.</p>
+
+      <!-- Progress bar -->
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+
+      <p class="progress-label">
+        {{ samplesCollected }} / {{ totalSamples }} samples collected
+      </p>
+
+      <p class="progress-note">
+        Only counts windows where you're actively typing.
+        Pauses are ignored automatically.
+      </p>
+
+      <button class="btn-cancel" (click)="cancel()">Cancel</button>
+    </div>
+  }
+
+  @if (phase === 'done') {
+    <div class="calibration-done">
+      <p>Baseline captured. Monitoring is now personalized to your typing style.</p>
+    </div>
+  }
+
+</div>

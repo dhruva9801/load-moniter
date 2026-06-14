@@ -1,0 +1,199 @@
+/* -------------------------------------------------------
+   home.css
+   Styles for the main monitoring page
+------------------------------------------------------- */
+
+/* The camera section: video + canvas overlaid on each other */
+.camera-container {
+  position: relative;
+  display: inline-block;
+  line-height: 0; /* removes small gap below inline elements */
+}
+
+.camera-feed {
+  width: 640px;
+  height: 480px;
+  background: #111;
+  display: block;
+}
+
+.camera-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none; /* clicks pass through to the video */
+}
+
+/* Small badge in the top-left of the camera showing detection status */
+.face-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #ef4444;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.face-badge.detected {
+  color: #22c55e;
+}
+
+/* Dashboard panel sits below the camera */
+.dashboard {
+  padding: 24px;
+  max-width: 640px;
+}
+
+.dashboard-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: #1a1a1a;
+}
+
+/* Grid of four small metric readouts */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.metric-card {
+  background: #f5f5f4;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-family: monospace;
+}
+
+/* Data collection status panel */
+.data-panel {
+  background: #f8f8f7;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.data-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px;
+}
+
+.data-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 14px;
+}
+
+.goal-note {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.goal-met {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+/* Action buttons row */
+.data-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-export {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-export:hover:not(:disabled) { background: #2563eb; }
+
+.btn-export:disabled {
+  background: #bfdbfe;
+  cursor: not-allowed;
+}
+
+/* Dev testing button — slightly different colour to indicate it's a dev tool */
+.btn-dev {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-dev:hover { background: #d97706; }
+
+.btn-clear {
+  background: transparent;
+  color: #888;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-clear:hover {
+  background: #f5f5f4;
+  color: #555;
+}
+
+.agent-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.85rem;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+
+.agent-status.connected {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.agent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
