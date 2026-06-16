@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     public  keystroke:       KeystrokeService,
-    private aiService:       AiService,
+    public  aiService:       AiService,
     public  dataLogger:      DataLoggerService,
     private baselineService: BaselineService
   ) {}

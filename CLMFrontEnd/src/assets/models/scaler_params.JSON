@@ -1,0 +1,5 @@
+{
+  "features": ["meanHold", "stdHold", "meanFlight", "stdFlight", "typingSpeed", "backspaceRate"],
+  "mean": [100.0, 20.0, 150.0, 40.0, 200.0, 0.05],
+  "std":  [30.0,  10.0, 60.0,  25.0, 80.0,  0.04]
+}

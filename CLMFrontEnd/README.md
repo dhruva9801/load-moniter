@@ -1,59 +1,92 @@
-# LoadMoniter
+# Cognitive Load Monitor (CLM)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+A research tool that estimates cognitive load in real time using keystroke dynamics. Data collected is used to train a machine learning model.
 
-## Development server
+---
 
-To start a local development server, run:
+## Project Structure
 
-```bash
-ng serve
+```
+CLM/
+├── CLMFrontEnd/     — Angular web app (dashboard, calibration, data export)
+├── CLMPython/
+│   └── clm_agent/
+│       └── clm_agent.py  — Python keystroke capture agent
+└── training/
+    ├── combine_and_train.py  — combines CSVs and trains the ONNX model
+    ├── requirements.txt
+    ├── data/                 — drop exported CSVs here (git-ignored)
+    └── models/               — trained ONNX output goes here
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Requirements
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Node.js 18+
+- Python 3.9+
+- Chrome (or any modern browser)
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Running the App
 
-```bash
-ng generate --help
-```
+You need two things running at the same time: the Python agent and the Angular app.
 
-## Building
-
-To build the project run:
+### 1. Start the keystroke agent
 
 ```bash
-ng build
+cd CLMPython/clm_agent
+pip install pynput websockets
+python clm_agent.py
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Leave this running in the background. It listens on `ws://localhost:8765` and captures keystrokes system-wide.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### 2. Start the frontend
 
 ```bash
-ng test
+cd CLMFrontEnd
+npm install
+npm start
 ```
 
-## Running end-to-end tests
+Open `http://localhost:4200` in your browser.
 
-For end-to-end (e2e) testing, run:
+---
+
+## Collecting Data
+
+1. Open the app — you'll be asked to enter a user ID (use your name or initials, keep it consistent)
+2. Complete the 30-second calibration (just type normally)
+3. Click **Start Task** before you begin working on something
+4. Click **Done — Rate this task** when you finish to submit a NASA-TLX rating
+5. Repeat across multiple sessions until you have 200+ labeled rows
+6. Click **Export labeled CSV** and send the file to the project lead
+
+---
+
+## Training the Model
+
+Once you have CSVs from multiple collaborators:
 
 ```bash
-ng e2e
+cd training
+pip install -r requirements.txt
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Drop all CSV files into `training/data/`, then:
 
-## Additional Resources
+```bash
+python combine_and_train.py
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This outputs `models/keystroke_model.onnx` and `models/scaler_params.json`. Copy both into `CLMFrontEnd/src/assets/models/` and the app will automatically use the trained model instead of the heuristic.
+
+---
+
+## Notes
+
+- The dashboard shows **"ONNX"** or **"Heuristic"** in the metrics grid so you always know which inference path is active
+- Raw CSV files are git-ignored — never commit personal typing data
+- If the agent disconnects, the dashboard shows a warning — restart `clm_agent.py` to reconnect

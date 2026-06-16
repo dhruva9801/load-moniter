@@ -143,13 +143,23 @@ export class DataLoggerService {
     console.log('[DataLogger] Cleared.');
   }
 
+  storageNearFull = false;
+
   // --- Storage ---
 
   private saveToStorage(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.rows));
+      const serialized = JSON.stringify(this.rows);
+      localStorage.setItem(STORAGE_KEY, serialized);
+
+      // Warn when over 80% of the ~5MB localStorage cap is used.
+      // Above this threshold writes may start failing and rows will be lost.
+      const usedBytes      = new Blob([serialized]).size;
+      const capBytes       = 5 * 1024 * 1024;
+      this.storageNearFull = usedBytes / capBytes > 0.8;
+
     } catch (e) {
-      // localStorage has a ~5MB limit — warn if it fills up
+      this.storageNearFull = true;
       console.warn('[DataLogger] localStorage write failed — may be full:', e);
     }
   }

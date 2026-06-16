@@ -23,6 +23,12 @@
 
     <h1 class="dashboard-title">Cognitive Load Monitor</h1>
 
+    @if (dataLogger.storageNearFull) {
+      <div class="storage-warning">
+        ⚠️ Storage almost full — export your CSV and clear the session before data is lost.
+      </div>
+    }
+
     <div class="agent-status" [class.connected]="keystroke.agentConnected">
       <span class="agent-dot"></span>
       <span class="agent-label">
@@ -53,6 +59,10 @@
         <div class="metric-card">
           <span class="metric-label">Load score</span>
           <span class="metric-value">{{ currentLoad | number:'1.0-3' }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Inference</span>
+          <span class="metric-value">{{ aiService.isUsingOnnx ? 'ONNX' : 'Heuristic' }}</span>
         </div>
       </div>
     }
