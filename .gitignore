@@ -1,48 +1,50 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Dependencies — never commit these
+node_modules/
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Angular build cache and output
+.angular/
+dist/
+tmp/
+out-tsc/
+bazel-out/
 
-# Node
-/node_modules
+# Logs
 npm-debug.log
 yarn-error.log
 
-# IDEs and editors
+# IDEs
 .idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.history/*
+.history/
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
 
-# Miscellaneous
-/.angular/cache
+# Misc
 .sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
+connect.lock
+coverage/
+libpeerconnection.log
 testem.log
-/typings
+typings/
 
 # System files
 .DS_Store
 Thumbs.db
 
-/src/generated/prisma
+# Environment files — never commit secrets
+.env
+*.env
 
-# Training data — raw CSVs contain personal typing data, never commit these
-/training/data/*.csv
-# Keep the trained models — these are safe to commit and needed by the Angular app
+# Training data — contains personal typing data, never commit
+training/data/*.csv
+
+# Generated
+src/generated/prisma
