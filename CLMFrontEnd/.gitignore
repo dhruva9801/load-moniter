@@ -42,3 +42,5 @@ testem.log
 Thumbs.db
 
 /src/generated/prisma
+.env
+*.env

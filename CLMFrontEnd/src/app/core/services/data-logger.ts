@@ -8,6 +8,7 @@ const STORAGE_KEY = 'clm_rows';
 
 // CSV columns — must stay in sync with the training script
 const CSV_HEADER = [
+  'userId',
   'meanHold', 'stdHold', 'meanFlight', 'stdFlight',
   'typingSpeed', 'backspaceRate',
   'speedDrop', 'holdIncrease', 'flightIncrease',
@@ -18,17 +19,28 @@ const CSV_HEADER = [
 @Injectable({ providedIn: 'root' })
 export class DataLoggerService {
 
-  private rows: CognitiveLogRow[] = [];
+  private rows:   CognitiveLogRow[] = [];
+  private userId: string = '';
 
   constructor() {
-    // Reload any rows saved from a previous session on startup
+    this.userId = localStorage.getItem('clm_user_id') ?? '';
     this.loadFromStorage();
+  }
+
+  setUserId(id: string): void {
+    this.userId = id.trim();
+    localStorage.setItem('clm_user_id', this.userId);
+  }
+
+  getUserId(): string {
+    return this.userId;
   }
 
   // Called every 5 seconds by home.ts onTick()
   // score comes from AiService and already contains all deviation fields
   log(features: CognitiveFeatures, score: Score): void {
     const row: CognitiveLogRow = {
+      userId:              this.userId,
       timestamp:           Date.now(),
       meanHold:            features.meanHold,
       stdHold:             features.stdHold,
@@ -68,6 +80,11 @@ export class DataLoggerService {
     return this.rows.filter(r => r.tlxLabel !== null).length;
   }
 
+  /** Rows logged since taskStart — used to gate the inactivity TLX prompt */
+  getCurrentTaskRowCount(taskStart: number = 0): number {
+    return this.rows.filter(r => r.timestamp >= taskStart).length;
+  }
+
   getTotalRowCount(): number {
     return this.rows.length;
   }
@@ -92,6 +109,7 @@ export class DataLoggerService {
     }
 
     const csvRows = labeled.map(r => [
+      r.userId,
       r.meanHold.toFixed(2),
       r.stdHold.toFixed(2),
       r.meanFlight.toFixed(2),

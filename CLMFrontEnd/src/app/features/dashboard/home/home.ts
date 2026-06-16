@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { KeystrokeService } from '@core/services/keystroke';
 import { AiService } from '@core/services/ai';
@@ -17,7 +18,7 @@ import { CalibrationComponent } from '@shared/components/calibration/calibration
   templateUrl: './home.html',
   styleUrl: './home.css',
   standalone: true,
-  imports: [CommonModule, AttentionMeterComponent, TlxPromptComponent, CalibrationComponent]
+  imports: [CommonModule, FormsModule, AttentionMeterComponent, TlxPromptComponent, CalibrationComponent]
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
@@ -25,16 +26,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   showTlxPrompt = false;
   taskActive    = false;
   baseline: UserBaseline | null = null;
-  view: 'calibrate' | 'dashboard' = 'dashboard';
+  view: 'onboarding' | 'calibrate' | 'dashboard' = 'dashboard';
+
+  userIdInput = '';
 
   currentFeatures: CognitiveFeatures | null = null;
 
-  private taskStart     = 0;
-  private loopTimer?:     ReturnType<typeof setInterval>;
-  private fallbackTimer?: ReturnType<typeof setInterval>;
+  private taskStart  = 0;
+  private loopTimer?: ReturnType<typeof setInterval>;
 
-  private readonly LOG_INTERVAL_MS      = 5_000;
-  private readonly FALLBACK_INTERVAL_MS = 20 * 60 * 1_000;
+  private readonly LOG_INTERVAL_MS    = 5_000;
+  // Show TLX prompt after this many seconds of no keystrokes during an active task
+  private readonly INACTIVITY_LIMIT_S = 5 * 60;
+  // Don't bother prompting if fewer than this many rows were logged — not worth labeling
+  private readonly MIN_ROWS_FOR_TLX   = 10;
 
   get labeledCount():     number { return this.dataLogger.getLabeledRowCount(); }
   get totalCount():       number { return this.dataLogger.getTotalRowCount(); }
@@ -49,6 +54,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.keystroke.init();
+
+    if (!this.dataLogger.getUserId()) {
+      this.view = 'onboarding';
+      return;
+    }
+
     this.baseline = this.baselineService.getBaseline();
 
     if (!this.baseline) {
@@ -59,6 +70,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.startMonitoring();
   }
 
+  confirmUserId(): void {
+    const id = this.userIdInput.trim();
+    if (!id) return;
+    this.dataLogger.setUserId(id);
+
+    this.baseline = this.baselineService.getBaseline();
+    this.view = this.baseline ? 'dashboard' : 'calibrate';
+
+    if (this.baseline) this.startMonitoring();
+  }
+
   onCalibrationComplete(baseline: UserBaseline): void {
     this.baseline = baseline;
     this.view     = 'dashboard';
@@ -67,13 +89,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private startMonitoring(): void {
     this.loopTimer = setInterval(() => this.onTick(), this.LOG_INTERVAL_MS);
-
-    this.fallbackTimer = setInterval(() => {
-      if (this.taskActive) this.showTlxPrompt = true;
-    }, this.FALLBACK_INTERVAL_MS);
   }
 
   private onTick(): void {
+    // Inactivity check — only triggers once per task because endTask() sets taskActive = false
+    if (
+      this.taskActive &&
+      !this.showTlxPrompt &&
+      this.keystroke.getSecondsSinceLastActivity() > this.INACTIVITY_LIMIT_S &&
+      this.dataLogger.getCurrentTaskRowCount(this.taskStart) >= this.MIN_ROWS_FOR_TLX
+    ) {
+      this.showTlxPrompt = true;
+      return;
+    }
+
     if (!this.keystroke.hasEnoughData()) {
       this.keystroke.resetWindow();
       return;
@@ -127,12 +156,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.baseline = null;
     this.view     = 'calibrate';
     clearInterval(this.loopTimer);
-    clearInterval(this.fallbackTimer);
   }
 
   ngOnDestroy(): void {
     this.keystroke.stop();
     clearInterval(this.loopTimer);
-    clearInterval(this.fallbackTimer);
   }
 }

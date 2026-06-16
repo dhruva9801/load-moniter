@@ -33,6 +33,9 @@ export class KeystrokeService {
   private backspaceCount = 0;
   private windowStart    = 0;
 
+  // Tracks last keystroke across window resets — used for inactivity detection
+  private lastActivityMs: number = 0;
+
   private socket         : WebSocket | null = null;
   private reconnectTimer?: ReturnType<typeof setTimeout>;
 
@@ -84,8 +87,15 @@ export class KeystrokeService {
       }
     }
 
-    this.lastReleaseMs = data.releaseTime;
+    this.lastReleaseMs  = data.releaseTime;
+    this.lastActivityMs = Date.now();
     this.keyCount++;
+  }
+
+  /** Ms since the last keystroke was received. Returns Infinity if no key has ever arrived. */
+  getSecondsSinceLastActivity(): number {
+    if (this.lastActivityMs === 0) return Infinity;
+    return (Date.now() - this.lastActivityMs) / 1_000;
   }
 
   // Minimum keystrokes before a window is worth logging.

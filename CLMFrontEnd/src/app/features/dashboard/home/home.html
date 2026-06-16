@@ -1,3 +1,17 @@
+@if (view === 'onboarding') {
+  <div class="onboarding">
+    <h1>Welcome to CLM</h1>
+    <p>Enter your ID so your data can be identified when exported. Use your name or initials — keep it consistent across sessions.</p>
+    <input
+      type="text"
+      placeholder="e.g. dhruva"
+      [(ngModel)]="userIdInput"
+      (keydown.enter)="confirmUserId()"
+    />
+    <button (click)="confirmUserId()" [disabled]="!userIdInput.trim()">Continue</button>
+  </div>
+}
+
 @if (view === 'calibrate') {
   <app-calibration
     (calibrationComplete)="onCalibrationComplete($event)"
