@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
@@ -110,6 +110,14 @@ def validate(df: pd.DataFrame) -> None:
     print(f'\nUsers in dataset: {df[USER_COL].unique().tolist()}')
     print(f'Rows per user:\n{df.groupby(USER_COL)[LABEL_COL].count().to_string()}')
 
+    if df[USER_COL].nunique() == 1:
+        print(
+            '\nNote: single-user dataset. This model will be personalized to this '
+            'user only and will not generalize to other people. That is fine for '
+            'validating the pipeline — retrain with more users before relying on '
+            'it for anyone else.'
+        )
+
 
 # ── Train ────────────────────────────────────────────────────────────────────
 
@@ -118,11 +126,21 @@ def train(df: pd.DataFrame):
     y = df[LABEL_COL].values.astype(np.float32)
     groups = df[USER_COL].values
 
-    # GroupShuffleSplit ensures no user's data appears in both train and test.
-    # This is critical — if the same person is in both splits, the model just
-    # memorizes their typing style and you get falsely high accuracy.
-    splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-    train_idx, test_idx = next(splitter.split(X, y, groups))
+    n_users = len(np.unique(groups))
+
+    if n_users > 1:
+        # Multiple users — split by group so no user appears in both train and test.
+        # This is the only honest way to evaluate generalization across people.
+        splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+        train_idx, test_idx = next(splitter.split(X, y, groups))
+        print(f'\nMultiple users detected ({n_users}) — splitting by user group.')
+    else:
+        # Single user — there's no group to split on, so fall back to a normal
+        # random split. This model will only be personalized to this one user
+        # and will NOT generalize to anyone else. That's expected at this stage.
+        print(f'\nOnly 1 user detected — training a personal model (will not generalize to others).')
+        idx = np.arange(len(X))
+        train_idx, test_idx = train_test_split(idx, test_size=0.2, random_state=42)
 
     X_train, X_test = X[train_idx], X[test_idx]
     y_train, y_test = y[train_idx], y[test_idx]

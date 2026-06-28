@@ -13,7 +13,8 @@ const CSV_HEADER = [
   'typingSpeed', 'backspaceRate',
   'speedDrop', 'holdIncrease', 'flightIncrease',
   'stdHoldDeviation', 'stdFlightDeviation',
-  'label'
+  'label',
+  'taskDescription'
 ].join(',');
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +42,7 @@ export class DataLoggerService {
   log(features: CognitiveFeatures, score: Score): void {
     const row: CognitiveLogRow = {
       userId:              this.userId,
+      taskDescription:     '', // set later by applyTlxLabel once the task is rated
       timestamp:           Date.now(),
       meanHold:            features.meanHold,
       stdHold:             features.stdHold,
@@ -61,13 +63,16 @@ export class DataLoggerService {
     this.saveToStorage(); // persist immediately — survive browser refresh
   }
 
-  // Labels every row inside the task window with the TLX score
-  applyTlxLabel(rating: TlxRating, windowStart: number): void {
+  // Labels every row inside the task window with the TLX score and description
+  applyTlxLabel(rating: TlxRating, windowStart: number, taskDescription: string = ''): void {
     const rowsInWindow = this.rows.filter(
       r => r.timestamp >= windowStart && r.timestamp <= rating.timestamp
     );
 
-    rowsInWindow.forEach(r => r.tlxLabel = rating.normalized);
+    rowsInWindow.forEach(r => {
+      r.tlxLabel        = rating.normalized;
+      r.taskDescription = taskDescription;
+    });
     this.saveToStorage();
 
     console.log(
@@ -121,7 +126,8 @@ export class DataLoggerService {
       r.flightIncrease.toFixed(4),
       r.stdHoldDeviation.toFixed(4),
       r.stdFlightDeviation.toFixed(4),
-      r.tlxLabel!.toFixed(4)
+      r.tlxLabel!.toFixed(4),
+      `"${r.taskDescription.replace(/"/g, '""')}"`
     ].join(','));
 
     const csv  = [CSV_HEADER, ...csvRows].join('\n');

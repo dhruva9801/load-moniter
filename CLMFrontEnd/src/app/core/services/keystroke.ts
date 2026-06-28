@@ -100,8 +100,22 @@ export class KeystrokeService {
 
   // Minimum keystrokes before a window is worth logging.
   // Prevents all-zero rows during pauses from polluting the dataset.
+  // A window only counts if there was real, distributed typing activity —
+  // not just a handful of keys typed in one burst then silence.
+  // Requires both a minimum keystroke count AND that activity spans
+  // at least 60% of the window duration (3 of 5 seconds).
   hasEnoughData(): boolean {
-    return this.keyCount >= 5;
+    if (this.keyCount < 5) return false;
+
+    const windowDurationMs = Date.now() - this.windowStart;
+    const minActiveSpanMs  = windowDurationMs * 0.6;
+
+    // lastReleaseMs is the time of the most recent keystroke.
+    // If activity stopped early in the window, this span will be short.
+    if (this.lastReleaseMs === null) return false;
+    const activeSpanMs = this.lastReleaseMs - this.windowStart;
+
+    return activeSpanMs >= minActiveSpanMs;
   }
 
   getWindowFeatures(): KeystrokeFeatures {

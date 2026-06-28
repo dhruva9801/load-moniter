@@ -3,8 +3,9 @@
 // Only rows where tlxLabel is not null appear in the exported CSV.
 
 export interface CognitiveLogRow {
-  userId:         string;       // set once at session start, stamped on every row
-  timestamp:      number;       // when this row was captured (ms since epoch)
+  userId:          string;
+  taskDescription: string;     // free-text description of the task, set when TLX is applied
+  timestamp:       number;       // when this row was captured (ms since epoch)
 
   // Raw keystroke features
   meanHold:       number;
