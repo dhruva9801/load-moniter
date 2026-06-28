@@ -24,7 +24,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   currentLoad   = 0;
   showTlxPrompt = false;
-  taskActive    = false;
+  taskActive       = false;
+  taskDescription  = '';
+  pendingStart     = false; // true while the description prompt is showing, before task actually starts
   baseline: UserBaseline | null = null;
   view: 'onboarding' | 'calibrate' | 'dashboard' = 'dashboard';
 
@@ -128,9 +130,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.keystroke.resetWindow();
   }
 
-  startTask(): void {
-    this.taskStart  = Date.now();
-    this.taskActive = true;
+  // Step 1 — user clicks "Start Task", show the description prompt
+  promptStartTask(): void {
+    this.pendingStart    = true;
+    this.taskDescription = '';
+  }
+
+  // Step 2 — user submits description, task actually begins
+  confirmStartTask(): void {
+    this.taskStart    = Date.now();
+    this.taskActive   = true;
+    this.pendingStart = false;
+    // taskDescription stays as-is, gets passed to dataLogger when the task ends
   }
 
   endTask(): void {
@@ -139,10 +150,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onTlxRated(rating: TlxRating): void {
-    this.dataLogger.applyTlxLabel(rating, this.taskStart);
+    this.dataLogger.applyTlxLabel(rating, this.taskStart, this.taskDescription);
     this.showTlxPrompt = false;
     this.taskActive    = false;
     this.taskStart     = 0;
+    this.taskDescription = '';
   }
 
   onTlxSkipped(): void {

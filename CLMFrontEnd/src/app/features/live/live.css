@@ -1,0 +1,63 @@
+.live-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.back-link {
+  color: #9a9ab0;
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.live-subtitle {
+  color: #9a9ab0;
+  margin-bottom: 24px;
+}
+
+.no-baseline {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.btn-link {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #5a5af0;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.break-prompt {
+  margin-top: 32px;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.break-prompt h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  color: #fca5a5;
+}
+
+.break-prompt p {
+  margin: 0 0 12px 0;
+  color: #fecaca;
+  font-size: 0.875rem;
+}
+
+.break-prompt button {
+  padding: 8px 18px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

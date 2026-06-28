@@ -70,18 +70,45 @@
     <!-- Task tracking -->
     <div class="data-panel">
       <h2 class="data-panel-title">Task tracking</h2>
-      <p class="task-instructions">
-        Click <strong>Start Task</strong> before you begin working,
-        then <strong>Done</strong> when you finish to rate your mental load.
-      </p>
-      <div class="data-actions">
-        <button class="btn-export" (click)="startTask()" [disabled]="taskActive">
-          {{ taskActive ? 'Task in progress...' : 'Start Task' }}
-        </button>
-        <button class="btn-dev" (click)="endTask()" [disabled]="!taskActive">
-          Done — Rate this task
-        </button>
-      </div>
+
+      @if (!pendingStart && !taskActive) {
+        <p class="task-instructions">
+          Click <strong>Start Task</strong> before you begin working,
+          then <strong>Done</strong> when you finish to rate your mental load.
+        </p>
+        <div class="data-actions">
+          <button class="btn-export" (click)="promptStartTask()">
+            Start Task
+          </button>
+        </div>
+      }
+
+      @if (pendingStart) {
+        <p class="task-instructions">What are you about to work on?</p>
+        <input
+          type="text"
+          class="task-description-input"
+          placeholder="e.g. AWS SAA practice exam, debugging CLM agent..."
+          [(ngModel)]="taskDescription"
+          (keydown.enter)="confirmStartTask()"
+        />
+        <div class="data-actions">
+          <button class="btn-export" (click)="confirmStartTask()" [disabled]="!taskDescription.trim()">
+            Begin
+          </button>
+        </div>
+      }
+
+      @if (taskActive) {
+        <p class="task-instructions">
+          Working on: <strong>{{ taskDescription }}</strong>
+        </p>
+        <div class="data-actions">
+          <button class="btn-dev" (click)="endTask()">
+            Done — Rate this task
+          </button>
+        </div>
+      }
     </div>
 
     <!-- Training data -->

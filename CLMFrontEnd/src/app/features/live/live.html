@@ -1,0 +1,26 @@
+<div class="live-page">
+
+  <a routerLink="/" class="back-link">← Back</a>
+
+  @if (!hasBaseline) {
+    <div class="no-baseline">
+      <h2>No baseline found</h2>
+      <p>You need to calibrate before using Live Mode. Head to Training Mode to calibrate first.</p>
+      <a routerLink="/train" class="btn-link">Go to Training Mode</a>
+    </div>
+  } @else {
+    <h1>Live Monitoring</h1>
+    <p class="live-subtitle">Running in the background. No task labeling — just your real-time load score.</p>
+
+    <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
+
+    @if (showBreakPrompt) {
+      <div class="break-prompt">
+        <h3>You've been under sustained high load for a while.</h3>
+        <p>Consider taking a short break.</p>
+        <button (click)="dismissBreakPrompt()">Dismiss</button>
+      </div>
+    }
+  }
+
+</div>
