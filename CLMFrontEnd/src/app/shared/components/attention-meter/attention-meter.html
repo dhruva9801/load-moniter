@@ -1,1 +1,35 @@
-<p>attention-meter works!</p>
+<div class="meter-wrap">
+  <svg class="meter-svg" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">
+    <!-- Track arc -->
+    <path
+      [attr.d]="arcPath"
+      fill="none"
+      stroke="#2a2a2a"
+      stroke-width="10"
+      stroke-linecap="round"
+    />
+    <!-- Fill arc -->
+    @if (fillPath) {
+      <path
+        [attr.d]="fillPath"
+        fill="none"
+        [attr.stroke]="arcColor"
+        stroke-width="10"
+        stroke-linecap="round"
+      />
+    }
+    <!-- Score number -->
+    <text
+      x="90" y="82"
+      text-anchor="middle"
+      font-family="Menlo, Consolas, monospace"
+      font-size="22"
+      font-weight="700"
+      [attr.fill]="arcColor"
+    >{{ (cognitiveLoad * 100 | number:'1.0-0') }}</text>
+    <!-- /100 label -->
+    <text x="90" y="97" text-anchor="middle" font-size="10" fill="#555">/100</text>
+  </svg>
+
+  <div class="meter-label" [style.color]="labelColor">{{ label }}</div>
+</div>

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Live } from './live';
+import { LoadChart } from './load-chart';
 
-describe('Live', () => {
-  let component: Live;
-  let fixture: ComponentFixture<Live>;
+describe('LoadChart', () => {
+  let component: LoadChart;
+  let fixture: ComponentFixture<LoadChart>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Live]
+      imports: [LoadChart]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Live);
+    fixture = TestBed.createComponent(LoadChart);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

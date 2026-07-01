@@ -1,18 +1,42 @@
 <div class="landing">
-  <h1>Cognitive Load Monitor</h1>
-  <p class="subtitle">Real-time cognitive load estimation from keystroke dynamics.</p>
 
-  <div class="mode-cards">
+  <div class="landing-hero">
+    <h1 class="hero-title">Cognitive Load Monitor</h1>
+    <p class="hero-sub">
+      Real-time cognitive load estimation from keystroke dynamics.<br>
+      Fully local — nothing leaves your machine.
+    </p>
+  </div>
+
+  <div class="mode-grid">
     <a class="mode-card" routerLink="/train">
-      <h2>Training Mode</h2>
-      <p>Calibrate, run labeled tasks, rate your mental load with NASA-TLX, and export data for model training.</p>
-      <span class="mode-cta">Collect data →</span>
+      <span class="mode-icon">⌨</span>
+      <div>
+        <h2 class="mode-name">Training Mode</h2>
+        <p class="mode-desc">
+          Calibrate your baseline, run labeled tasks, rate your mental load
+          with NASA-TLX, and export data for model training.
+        </p>
+        <span class="mode-cta">Collect data →</span>
+      </div>
     </a>
 
     <a class="mode-card" routerLink="/live">
-      <h2>Live Mode</h2>
-      <p>Run in the background, see your real-time load score, and get notified if sustained high load is detected.</p>
-      <span class="mode-cta">Start monitoring →</span>
+      <span class="mode-icon">◉</span>
+      <div>
+        <h2 class="mode-name">Live Mode</h2>
+        <p class="mode-desc">
+          Passive background monitoring. Real-time load score, session
+          history chart, and break notifications when you're declining.
+        </p>
+        <span class="mode-cta">Start monitoring →</span>
+      </div>
     </a>
   </div>
+
+  <div class="landing-note">
+    Requires <code>clm_agent.py</code> running locally to capture keystrokes.
+    See README for setup.
+  </div>
+
 </div>

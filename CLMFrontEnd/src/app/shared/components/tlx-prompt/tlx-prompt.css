@@ -1,0 +1,111 @@
+.tlx-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.tlx-card {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.tlx-header { margin-bottom: 20px; }
+
+.tlx-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.tlx-sub { font-size: 0.825rem; color: var(--text-dim); }
+
+.dimension {
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.dim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.dim-label { font-size: 0.875rem; font-weight: 600; }
+.dim-value { font-size: 1rem; font-weight: 700; font-family: var(--font-mono); }
+.dim-max   { font-size: 0.75rem; color: var(--text-faint); font-weight: 400; }
+
+.dim-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--yellow);
+  cursor: pointer;
+}
+
+.scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+.tlx-summary {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 16px 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.summary-label { font-size: 0.875rem; color: var(--text-dim); }
+.summary-score { font-size: 1.25rem; font-weight: 700; font-family: var(--font-mono); }
+
+.progress-track {
+  height: 4px;
+  background: var(--border-2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.progress-fill.low  { background: var(--green); }
+.progress-fill.med  { background: var(--yellow); }
+.progress-fill.high { background: var(--red); }
+
+.summary-interp { font-size: 0.825rem; color: var(--text-dim); margin-bottom: 4px; }
+.summary-note   { font-size: 0.75rem;  color: var(--text-faint); font-family: var(--font-mono); }
+
+.tlx-actions { display: flex; gap: 10px; }
+.tlx-actions .btn { flex: 1; justify-content: center; padding: 11px; }

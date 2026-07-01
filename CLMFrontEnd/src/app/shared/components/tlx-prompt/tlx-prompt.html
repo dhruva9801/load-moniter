@@ -1,1 +1,47 @@
-<p>tlx-prompt works!</p>
+<div class="tlx-overlay">
+  <div class="tlx-card">
+
+    <div class="tlx-header">
+      <h2 class="tlx-title">Task check-in</h2>
+      <p class="tlx-sub">Rate the last session on each scale. Takes ~30 seconds.</p>
+    </div>
+
+    @for (dim of dimensions; track dim.key) {
+      <div class="dimension">
+        <div class="dim-header">
+          <span class="dim-label">{{ dim.label }}</span>
+          <span class="dim-value">{{ dim.value }}<span class="dim-max"> / 9</span></span>
+        </div>
+        <p class="dim-desc">{{ dim.description }}</p>
+        <input
+          type="range" min="1" max="9" step="1"
+          [(ngModel)]="dim.value"
+          (ngModelChange)="recalculate()"
+          class="slider"
+        />
+        <div class="scale-ends">
+          <span>{{ dim.lowLabel }}</span>
+          <span>{{ dim.highLabel }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="tlx-summary">
+      <div class="summary-row">
+        <span class="summary-label">Overall load</span>
+        <span class="summary-score">{{ averageScore.toFixed(1) }} / 9</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" [class]="fillClass" [style.width.%]="progressPercent"></div>
+      </div>
+      <p class="summary-interp">{{ interpretation }}</p>
+      <p class="summary-note">Training label: {{ normalizedScore.toFixed(3) }}</p>
+    </div>
+
+    <div class="tlx-actions">
+      <button class="btn btn-primary" (click)="submit()">Save rating</button>
+      <button class="btn btn-ghost"   (click)="skip.emit()">Skip</button>
+    </div>
+
+  </div>
+</div>

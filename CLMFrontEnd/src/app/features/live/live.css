@@ -1,63 +1,87 @@
-.live-page {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 32px 24px;
-}
-
-.back-link {
-  color: #9a9ab0;
-  text-decoration: none;
-  font-size: 0.875rem;
-  display: inline-block;
+.live-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.live-subtitle {
-  color: #9a9ab0;
-  margin-bottom: 24px;
-}
+.live-header .page-title,
+.live-header .page-sub { margin-bottom: 0; }
 
-.no-baseline {
-  text-align: center;
-  padding: 48px 24px;
-}
+.header-status { padding-top: 4px; }
 
-.btn-link {
-  display: inline-block;
-  margin-top: 16px;
-  padding: 10px 20px;
-  background: #5a5af0;
-  color: white;
-  border-radius: 6px;
-  text-decoration: none;
-}
+.meter-card { text-align: center; }
 
-.break-prompt {
-  margin-top: 32px;
-  background: #7f1d1d;
-  border: 1px solid #ef4444;
+.break-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: rgba(224,82,82,0.08);
+  border: 1px solid var(--red);
   border-radius: 8px;
-  padding: 16px 20px;
-  text-align: center;
+  padding: 14px 18px;
+  margin-bottom: 16px;
 }
 
-.break-prompt h3 {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
-  color: #fca5a5;
+.break-card.erratic {
+  background: rgba(224,154,48,0.08);
+  border-color: var(--amber);
 }
 
-.break-prompt p {
-  margin: 0 0 12px 0;
-  color: #fecaca;
+.break-title {
   font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: var(--red);
 }
 
-.break-prompt button {
-  padding: 8px 18px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.break-card.erratic .break-title { color: var(--amber); }
+
+.break-msg { font-size: 0.8rem; color: var(--text-dim); }
+
+.break-dismiss { white-space: nowrap; flex-shrink: 0; }
+
+.session-footer { margin-top: 24px; }
+
+/* Summary */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
 }
+
+.sum-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.sum-item:nth-last-child(-n+2) { border-bottom: none; }
+
+.sum-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sum-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.sum-empty {
+  font-size: 0.825rem;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 12px 0 4px;
+}
+
+.no-baseline { padding-top: 40px; }

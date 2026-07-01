@@ -1,47 +1,42 @@
-<div class="calibration-panel">
+<div class="page">
+  <h1 class="page-title">Baseline Calibration</h1>
+  <p class="page-sub">
+    CLM needs to learn your natural typing rhythm before it can detect deviation.
+    This takes about 30 seconds.
+  </p>
 
-  <h2 class="calibration-title">Baseline Calibration</h2>
-
-  @if (phase === 'idle') {
-    <div class="calibration-instructions">
-      <p>
-        Before monitoring begins, we need to learn your natural typing rhythm
-        when you're relaxed. This takes about 30 seconds.
+  <div class="card">
+    @if (phase === 'idle') {
+      <p class="cal-body">
+        Click <strong>Start</strong>, then type normally — write an email, take notes, anything.
+        Don't rush or change how you type. CLM is learning your resting baseline, not testing you.
       </p>
-      <p>
-        Click <strong>Start</strong>, then type normally — write an email,
-        take notes, anything comfortable. Don't rush or try to type differently.
-      </p>
-      <button class="btn-start" (click)="start()">Start Calibration</button>
-    </div>
-  }
+      <div class="cal-actions">
+        <button class="btn btn-primary" (click)="start()">Start calibration</button>
+      </div>
+    }
 
-  @if (phase === 'running') {
-    <div class="calibration-running">
-      <p class="calibration-prompt">Type normally — just work as you usually would.</p>
+    @if (phase === 'running') {
+      <p class="cal-prompt">Type normally — just work as you usually would.</p>
 
-      <!-- Progress bar -->
       <div class="progress-track">
         <div class="progress-fill" [style.width.%]="progressPercent"></div>
       </div>
 
-      <p class="progress-label">
-        {{ samplesCollected }} / {{ totalSamples }} samples collected
+      <div class="progress-meta">
+        <span class="progress-count">{{ samplesCollected }} / {{ totalSamples }} windows</span>
+        <span class="progress-note">Idle pauses are skipped automatically.</span>
+      </div>
+
+      <div class="cal-actions">
+        <button class="btn btn-ghost" (click)="cancel()">Cancel</button>
+      </div>
+    }
+
+    @if (phase === 'done') {
+      <p class="cal-done">
+        ✓ Baseline captured. Monitoring is now calibrated to your typing style.
       </p>
-
-      <p class="progress-note">
-        Only counts windows where you're actively typing.
-        Pauses are ignored automatically.
-      </p>
-
-      <button class="btn-cancel" (click)="cancel()">Cancel</button>
-    </div>
-  }
-
-  @if (phase === 'done') {
-    <div class="calibration-done">
-      <p>Baseline captured. Monitoring is now personalized to your typing style.</p>
-    </div>
-  }
-
+    }
+  </div>
 </div>

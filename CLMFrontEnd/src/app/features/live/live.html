@@ -1,26 +1,110 @@
-<div class="live-page">
-
-  <a routerLink="/" class="back-link">← Back</a>
+<div class="page">
 
   @if (!hasBaseline) {
     <div class="no-baseline">
-      <h2>No baseline found</h2>
-      <p>You need to calibrate before using Live Mode. Head to Training Mode to calibrate first.</p>
-      <a routerLink="/train" class="btn-link">Go to Training Mode</a>
+      <h1 class="page-title">No baseline found</h1>
+      <p class="page-sub">
+        You need to calibrate before using Live Mode.
+        Head to Training Mode first.
+      </p>
+      <a routerLink="/train" class="btn btn-primary">Go to Training Mode</a>
     </div>
   } @else {
-    <h1>Live Monitoring</h1>
-    <p class="live-subtitle">Running in the background. No task labeling — just your real-time load score.</p>
 
-    <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
+    @if (sessionActive) {
 
-    @if (showBreakPrompt) {
-      <div class="break-prompt">
-        <h3>You've been under sustained high load for a while.</h3>
-        <p>Consider taking a short break.</p>
-        <button (click)="dismissBreakPrompt()">Dismiss</button>
+      <div class="live-header">
+        <div>
+          <h1 class="page-title">Live</h1>
+          <p class="page-sub">Passive monitoring — no task labeling.</p>
+        </div>
+        <div class="header-status">
+          <div class="status-pill ok">
+            <span class="status-dot"></span>
+            Monitoring
+          </div>
+        </div>
       </div>
+
+      <!-- Gauge -->
+      <div class="card meter-card">
+        <div class="card-title">Current load</div>
+        <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
+      </div>
+
+      <!-- Live chart -->
+      <div class="card">
+        <div class="card-title">Session history</div>
+        <app-load-chart [samples]="history"></app-load-chart>
+      </div>
+
+      <!-- Break prompt -->
+      @if (showBreakPrompt) {
+        <div class="break-card" [class.erratic]="breakReason === 'erratic-decline'">
+          <div class="break-body">
+            <p class="break-title">{{ breakPromptTitle }}</p>
+            <p class="break-msg">{{ breakPromptBody }}</p>
+          </div>
+          <button class="btn btn-ghost break-dismiss" (click)="dismissBreakPrompt()">Dismiss</button>
+        </div>
+      }
+
+      <div class="session-footer">
+        <button class="btn btn-ghost" (click)="endSession()">End Session</button>
+      </div>
+
     }
+
+    @if (!sessionActive && sessionSummary) {
+
+      <h1 class="page-title">Session Summary</h1>
+      <p class="page-sub">{{ formatTime(sessionSummary.startedAt) }} — {{ formatTime(sessionSummary.endedAt) }}</p>
+
+      <!-- Full session chart -->
+      <div class="card">
+        <div class="card-title">Load over session</div>
+        <app-load-chart [samples]="history" [showThreshold]="true"></app-load-chart>
+      </div>
+
+      <!-- Stats -->
+      <div class="card">
+        <div class="card-title">Stats</div>
+        <div class="summary-grid">
+          <div class="sum-item">
+            <span class="sum-label">Duration</span>
+            <span class="sum-val">{{ formatDuration(sessionSummary.durationMs) }}</span>
+          </div>
+          <div class="sum-item">
+            <span class="sum-label">Peak load</span>
+            <span class="sum-val">{{ (sessionSummary.peakLoad * 100 | number:'1.0-0') }}</span>
+          </div>
+          <div class="sum-item">
+            <span class="sum-label">Peak at</span>
+            <span class="sum-val">{{ formatTime(sessionSummary.peakAt) }}</span>
+          </div>
+          <div class="sum-item">
+            <span class="sum-label">Longest high streak</span>
+            <span class="sum-val">{{ formatDuration(sessionSummary.longestHighLoadStreakMs) }}</span>
+          </div>
+          <div class="sum-item">
+            <span class="sum-label">Total high-load time</span>
+            <span class="sum-val">{{ formatDuration(sessionSummary.totalHighLoadMs) }}</span>
+          </div>
+          <div class="sum-item">
+            <span class="sum-label">Last load drop</span>
+            <span class="sum-val">{{ formatTime(sessionSummary.lastDropAt) }}</span>
+          </div>
+        </div>
+
+        @if (sessionSummary.sampleCount === 0) {
+          <p class="sum-empty">No keystroke activity was recorded this session.</p>
+        }
+      </div>
+
+      <button class="btn btn-primary" (click)="startNewSession()">Start New Session</button>
+
+    }
+
   }
 
 </div>

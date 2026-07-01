@@ -1,156 +1,159 @@
 @if (view === 'onboarding') {
-  <div class="onboarding">
-    <h1>Welcome to CLM</h1>
-    <p>Enter your ID so your data can be identified when exported. Use your name or initials — keep it consistent across sessions.</p>
-    <input
-      type="text"
-      placeholder="e.g. dhruva"
-      [(ngModel)]="userIdInput"
-      (keydown.enter)="confirmUserId()"
-    />
-    <button (click)="confirmUserId()" [disabled]="!userIdInput.trim()">Continue</button>
+  <div class="page">
+    <h1 class="page-title">Welcome to CLM</h1>
+    <p class="page-sub">
+      Enter your user ID so your data can be identified when exported.
+      Use your name or initials — keep it consistent across sessions.
+    </p>
+    <div class="card">
+      <input
+        type="text"
+        class="input-text"
+        placeholder="e.g. dhruva"
+        [(ngModel)]="userIdInput"
+        (keydown.enter)="confirmUserId()"
+      />
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="confirmUserId()" [disabled]="!userIdInput.trim()">
+          Continue →
+        </button>
+      </div>
+    </div>
   </div>
 }
 
 @if (view === 'calibrate') {
-  <app-calibration
-    (calibrationComplete)="onCalibrationComplete($event)"
-  ></app-calibration>
+  <app-calibration (calibrationComplete)="onCalibrationComplete($event)"></app-calibration>
 }
 
 @if (view === 'dashboard') {
-  <div class="dashboard">
+  <div class="page">
 
-    <h1 class="dashboard-title">Cognitive Load Monitor</h1>
-
-    @if (dataLogger.storageNearFull) {
-      <div class="storage-warning">
-        ⚠️ Storage almost full — export your CSV and clear the session before data is lost.
+    <div class="dashboard-header">
+      <div>
+        <h1 class="page-title">Training Mode</h1>
+        <p class="page-sub">Label tasks to build your personal training dataset.</p>
       </div>
-    }
 
-    <div class="agent-status" [class.connected]="keystroke.agentConnected">
-      <span class="agent-dot"></span>
-      <span class="agent-label">
-        {{ keystroke.agentConnected ? 'Agent connected' : 'Agent disconnected — run clm_agent.py' }}
-      </span>
+      <div class="header-status">
+        <div class="status-pill" [class.ok]="keystroke.agentConnected" [class.error]="!keystroke.agentConnected">
+          <span class="status-dot"></span>
+          {{ keystroke.agentConnected ? 'Agent connected' : 'Agent offline' }}
+        </div>
+        <div class="status-pill" [class.ok]="aiService.isUsingOnnx">
+          <span class="status-dot"></span>
+          {{ aiService.isUsingOnnx ? 'ONNX' : 'Heuristic' }}
+        </div>
+      </div>
     </div>
 
-    <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
-
-    @if (currentFeatures) {
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <span class="metric-label">Typing speed</span>
-          <span class="metric-value">{{ currentFeatures.typingSpeed | number:'1.0-0' }} kpm</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Hold time</span>
-          <span class="metric-value">{{ currentFeatures.meanHold | number:'1.0-0' }} ms</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Flight time</span>
-          <span class="metric-value">{{ currentFeatures.meanFlight | number:'1.0-0' }} ms</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Backspace rate</span>
-          <span class="metric-value">{{ currentFeatures.backspaceRate | percent:'1.0-1' }}</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Load score</span>
-          <span class="metric-value">{{ currentLoad | number:'1.0-3' }}</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Inference</span>
-          <span class="metric-value">{{ aiService.isUsingOnnx ? 'ONNX' : 'Heuristic' }}</span>
-        </div>
+    @if (dataLogger.storageNearFull) {
+      <div class="alert alert-warn">
+        ⚠ Storage almost full — export your CSV and clear the session before data is lost.
       </div>
     }
 
+    <!-- Load meter -->
+    <div class="card meter-card">
+      <div class="card-title">Current load</div>
+      <app-attention-meter [cognitiveLoad]="currentLoad"></app-attention-meter>
+
+      @if (currentFeatures) {
+        <div class="metrics-row">
+          <div class="metric">
+            <span class="metric-label">Speed</span>
+            <span class="metric-val">{{ currentFeatures.typingSpeed | number:'1.0-0' }}<span class="metric-unit"> kpm</span></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Hold</span>
+            <span class="metric-val">{{ currentFeatures.meanHold | number:'1.0-0' }}<span class="metric-unit"> ms</span></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Flight</span>
+            <span class="metric-val">{{ currentFeatures.meanFlight | number:'1.0-0' }}<span class="metric-unit"> ms</span></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Backspace</span>
+            <span class="metric-val">{{ currentFeatures.backspaceRate | percent:'1.0-1' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- Task tracking -->
-    <div class="data-panel">
-      <h2 class="data-panel-title">Task tracking</h2>
+    <div class="card">
+      <div class="card-title">Task tracking</div>
 
       @if (!pendingStart && !taskActive) {
-        <p class="task-instructions">
-          Click <strong>Start Task</strong> before you begin working,
-          then <strong>Done</strong> when you finish to rate your mental load.
+        <p class="card-body">
+          Click <strong>Start Task</strong> before you begin, then <strong>Done</strong>
+          when you finish to rate your mental load with NASA-TLX.
         </p>
-        <div class="data-actions">
-          <button class="btn-export" (click)="promptStartTask()">
-            Start Task
-          </button>
-        </div>
+        <button class="btn btn-primary" (click)="promptStartTask()">Start Task</button>
       }
 
       @if (pendingStart) {
-        <p class="task-instructions">What are you about to work on?</p>
+        <p class="card-body">What are you about to work on?</p>
         <input
           type="text"
-          class="task-description-input"
+          class="input-text"
+          style="margin-bottom: 12px"
           placeholder="e.g. AWS SAA practice exam, debugging CLM agent..."
           [(ngModel)]="taskDescription"
           (keydown.enter)="confirmStartTask()"
         />
-        <div class="data-actions">
-          <button class="btn-export" (click)="confirmStartTask()" [disabled]="!taskDescription.trim()">
-            Begin
-          </button>
-        </div>
+        <button class="btn btn-primary" (click)="confirmStartTask()" [disabled]="!taskDescription.trim()">
+          Begin →
+        </button>
       }
 
       @if (taskActive) {
-        <p class="task-instructions">
-          Working on: <strong>{{ taskDescription }}</strong>
-        </p>
-        <div class="data-actions">
-          <button class="btn-dev" (click)="endTask()">
-            Done — Rate this task
-          </button>
-        </div>
+        <p class="task-active-label">Working on:</p>
+        <p class="task-name">{{ taskDescription }}</p>
+        <button class="btn btn-ghost" style="margin-top: 12px" (click)="endTask()">
+          Done — rate this task
+        </button>
       }
     </div>
 
-    <!-- Training data -->
-    <div class="data-panel">
-      <h2 class="data-panel-title">Training data</h2>
+    <!-- Training data stats -->
+    <div class="card">
+      <div class="card-title">Training data</div>
 
-      <div class="data-stats">
-        <span>Total rows: <strong>{{ totalCount }}</strong></span>
-        <span>Labeled rows: <strong>{{ labeledCount }}</strong></span>
-
-        @if (labeledCount < 200) {
-          <span class="goal-note">Goal: 200 labeled rows ({{ 200 - labeledCount }} to go)</span>
-        } @else {
-          <span class="goal-met">Ready to train — export and run the Python script.</span>
-        }
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-val">{{ totalCount }}</span>
+          <span class="stat-label">total rows</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val">{{ labeledCount }}</span>
+          <span class="stat-label">labeled</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" [class.goal-met]="labeledCount >= 200">
+            {{ labeledCount >= 200 ? '✓' : (200 - labeledCount) }}
+          </span>
+          <span class="stat-label">{{ labeledCount >= 200 ? 'goal reached' : 'to goal (200)' }}</span>
+        </div>
       </div>
 
-      <!-- Label distribution — shows spread across low/medium/high load -->
-      <!-- This is critical: if all three numbers aren't roughly balanced you have bad training data -->
       @if (labeledCount > 0) {
-        <div class="label-distribution">
-          <span class="dist-label">Label spread:</span>
-          <span class="dist-low">Low: {{ labelDistribution.low }}</span>
-          <span class="dist-med">Med: {{ labelDistribution.medium }}</span>
-          <span class="dist-high">High: {{ labelDistribution.high }}</span>
+        <div class="dist-row">
+          <span class="dist-label">Label spread</span>
+          <div class="dist-pills">
+            <span class="dist-pill low">Low {{ labelDistribution.low }}</span>
+            <span class="dist-pill med">Med {{ labelDistribution.medium }}</span>
+            <span class="dist-pill high">High {{ labelDistribution.high }}</span>
+          </div>
         </div>
       }
 
-      <div class="data-actions">
-        <button
-          class="btn-export"
-          (click)="dataLogger.downloadLabeledCSV()"
-          [disabled]="labeledCount === 0"
-        >
-          Export labeled CSV
+      <div class="card-actions">
+        <button class="btn btn-primary" (click)="dataLogger.downloadLabeledCSV()" [disabled]="labeledCount === 0">
+          Export CSV
         </button>
-        <button class="btn-clear" (click)="dataLogger.clear()">
-          Clear session
-        </button>
-        <button class="btn-cancel" (click)="recalibrate()">
-          Recalibrate
-        </button>
+        <button class="btn btn-ghost" (click)="dataLogger.clear()">Clear session</button>
+        <button class="btn btn-ghost" (click)="recalibrate()">Recalibrate</button>
       </div>
     </div>
 
@@ -158,8 +161,5 @@
 }
 
 @if (showTlxPrompt) {
-  <app-tlx-prompt
-    (rated)="onTlxRated($event)"
-    (skip)="onTlxSkipped()"
-  ></app-tlx-prompt>
+  <app-tlx-prompt (rated)="onTlxRated($event)" (skip)="onTlxSkipped()"></app-tlx-prompt>
 }

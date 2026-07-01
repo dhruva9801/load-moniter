@@ -1,0 +1,38 @@
+<div class="chart-wrap">
+  @if (samples.length < 2) {
+    <div class="chart-empty">No data yet — load history will appear here.</div>
+  } @else {
+    <svg class="chart-svg" [attr.viewBox]="'0 0 ' + W + ' ' + H" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+
+      <!-- Threshold line -->
+      @if (showThreshold) {
+        <line
+          [attr.x1]="PAD.l" [attr.x2]="W - PAD.r"
+          [attr.y1]="thresholdY" [attr.y2]="thresholdY"
+          stroke="#333" stroke-width="1" stroke-dasharray="4 3"
+        />
+        <text [attr.x]="W - PAD.r - 2" [attr.y]="thresholdY - 3"
+          font-size="8" fill="#444" text-anchor="end">high</text>
+      }
+
+      <!-- Area fill -->
+      <path [attr.d]="areaPath" fill="rgba(245,197,24,0.06)" />
+
+      <!-- Line -->
+      <path [attr.d]="linePath" fill="none" stroke="#f5c518" stroke-width="1.5" stroke-linejoin="round" />
+
+      <!-- Y axis labels -->
+      @for (l of yLabels; track l.label) {
+        <text [attr.x]="PAD.l - 4" [attr.y]="l.y + 3"
+          font-size="8" fill="#555" text-anchor="end">{{ l.label }}</text>
+      }
+
+      <!-- X axis labels -->
+      @for (l of xLabels; track l.label) {
+        <text [attr.x]="l.x" [attr.y]="H - 4"
+          font-size="8" fill="#555" text-anchor="middle">{{ l.label }}</text>
+      }
+
+    </svg>
+  }
+</div>

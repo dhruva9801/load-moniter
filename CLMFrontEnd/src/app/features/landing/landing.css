@@ -1,61 +1,91 @@
 .landing {
-  max-width: 800px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 64px 24px;
-  text-align: center;
+  padding: 72px 24px 80px;
 }
 
-.landing h1 {
-  font-size: 2.25rem;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  color: #9a9ab0;
+.landing-hero {
   margin-bottom: 48px;
 }
 
-.mode-cards {
+.hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--yellow);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.hero-sub {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.mode-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 14px;
+  margin-bottom: 32px;
 }
 
 .mode-card {
-  display: block;
-  text-align: left;
-  background: #1a1a2e;
-  border: 1px solid #2e2e4a;
-  border-radius: 12px;
-  padding: 24px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s;
 }
 
 .mode-card:hover {
-  border-color: #5a5af0;
+  border-color: var(--yellow);
+  text-decoration: none;
 }
 
-.mode-card h2 {
-  margin: 0 0 8px 0;
+.mode-icon {
   font-size: 1.25rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--yellow);
 }
 
-.mode-card p {
-  color: #9a9ab0;
-  font-size: 0.9rem;
-  margin: 0 0 16px 0;
+.mode-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.mode-desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
 .mode-cta {
-  color: #7a7af0;
+  font-size: 0.8rem;
   font-weight: 600;
-  font-size: 0.875rem;
+  color: var(--yellow);
 }
 
-@media (max-width: 600px) {
-  .mode-cards {
-    grid-template-columns: 1fr;
-  }
+.landing-note {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  border-left: 2px solid var(--border-2);
+  padding-left: 12px;
+}
+
+.landing-note code {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+@media (max-width: 520px) {
+  .mode-grid { grid-template-columns: 1fr; }
 }
