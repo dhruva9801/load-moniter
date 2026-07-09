@@ -1,0 +1,3 @@
+# CLMPython/requirements.txt — keystroke capture agent
+pynput>=1.7.6
+websockets>=12.0

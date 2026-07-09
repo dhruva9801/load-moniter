@@ -2,6 +2,8 @@
 
 Real-time cognitive load estimation from keystroke dynamics. Fully local — no data leaves your machine.
 
+> **Project status: complete.** CLM is a finished portfolio project, not under active development. The identified bottleneck is labeled-data collection cost (recruiting participants for NASA-TLX-labeled typing sessions is a study-logistics problem, not an engineering one), and the pipeline goals — fully local capture, training, and browser inference — were met. See [Status and future directions](#status-and-future-directions) for what continuation would look like.
+
 ---
 
 ## What it does
@@ -19,31 +21,57 @@ Two modes:
 
 | Metric | Value |
 |---|---|
-| Architecture | Random Forest Regressor |
-| Features | 6 keystroke features (hold time, flight time, typing speed, backspace rate, and their variances) |
-| Training data | 244 rows, single user |
-| Cross-validated R² | 0.30 ± 0.12 (5-fold) |
-| Cross-validated MAE | 0.15 ± 0.01 |
-| Single-split R² | 0.41 (reported for reference; CV estimate is more honest) |
+| Architecture | Random Forest Regressor (Linear Regression evaluated as comparison) |
+| Features | 6 keystroke features: `meanHold`, `stdHold`, `meanFlight`, `stdFlight`, `typingSpeed`, `backspaceRate` |
+| Training data | 244 rows across **7 task sessions**, single user — one NASA-TLX label per session, so the effective sample size is **7 labeled tasks**, not 244 rows |
+| Evaluation | Leave-one-session-out CV (7 folds), pooled out-of-fold metrics |
+| Pooled R² (RF) | **−0.13** |
+| Pooled MAE (RF) | 0.21 (on a 0–1 load scale) |
 
-**Known limitations:**
+**Leakage-free baseline comparison (leave-one-session-out, pooled):**
 
-The cross-validation R² of 0.30 with ±0.12 standard deviation reveals that the single-split R² of 0.41 was a favorable draw, not a stable estimate. Error analysis shows the model systematically underestimates high-load states (mean prediction 0.65 when actual is 0.81) and overestimates low-load states (mean prediction 0.37 when actual is 0.18) — a classic regression-to-the-mean effect from leaf-averaging regularization under limited data. The bottleneck is data volume, not architecture or hyperparameter choice (GridSearchCV over 45 combinations confirmed no meaningful improvement over the baseline hyperparams at this dataset size).
+| Model | Pooled R² | Pooled MAE |
+|---|---|---|
+| Linear Regression | −0.08 | 0.21 |
+| Random Forest | −0.13 | 0.21 |
+| Predict-train-mean baseline | −0.34 | 0.24 |
 
-All five diagnostic steps have been run: feature importance, hyperparameter tuning, baseline comparison (Linear Regression R²=0.26 vs RF R²=0.41), error analysis by load bin, and cross-validation. Output is in `training/analyze_model.py`.
+The honest conclusion: **the model does not have deployable predictive skill on unseen sessions.** Negative pooled R² means its predictions are worse than a constant guess at the global mean load. It does beat the predict-train-mean baseline on both metrics, and its out-of-fold predictions correctly rank the two lowest-load sessions lowest — so a faint low-end signal exists — but it collapses at the high end (the 0.85-load session received a mean prediction of 0.53). Predictions span only 0.44–0.65 while true labels span 0.125–0.85: severe regression to the mean. Notably, Linear Regression out-generalizes the Random Forest at this sample size — with an effective n of 7, the lower-variance model wins, a textbook bias–variance result observed in the project's own data.
+
+**Known limitations (and one important correction):**
+
+Earlier iterations of this project reported a single-split R² of 0.41 and an ungrouped 5-fold CV R² of 0.30 ± 0.12. **Both numbers were inflated by session leakage.** Because every window in a session carries the session's single NASA-TLX label, any split that places windows from the same session in both train and test allows the model to identify *which session* a window came from (typing rhythm is highly distinctive within a session) and retrieve its memorized label — session fingerprinting, not load prediction. In deployment, every session is unseen, so the only valid evaluation is leave-one-session-out. The discredited numbers are recorded here deliberately, as documentation of the evaluation error and its correction.
+
+The bottleneck is labeled-session count, not architecture or hyperparameters: GridSearchCV over 45 combinations produced no meaningful improvement, and no model class can be expected to generalize from 7 labeled tasks. Diagnostics — LOSO evaluation for RF, LR, and a predict-train-mean baseline, feature importances, and per-session error analysis — are reproducible via `python training/analyze_model.py`.
 
 **Feature importances:**
 
 | Feature | Importance |
 |---|---|
-| meanHold | 0.43 |
-| typingSpeed | 0.24 |
-| meanFlight | 0.10 |
-| stdHold | 0.10 |
-| backspaceRate | 0.07 |
-| stdFlight | 0.06 |
+| meanHold | 0.37 |
+| typingSpeed | 0.19 |
+| meanFlight | 0.14 |
+| stdHold | 0.13 |
+| stdFlight | 0.09 |
+| backspaceRate | 0.08 |
 
-`meanHold` and `typingSpeed` account for 67% of predictive signal on the current dataset. This may shift as more users are added.
+`meanHold` and `typingSpeed` account for over half the predictive signal on the current single-user dataset. Given the sample size, these rankings should be read as rough tendencies, not stable estimates.
+
+---
+
+## Design history and lessons learned
+
+CLM did not start as a keystroke project, and two of its most important engineering decisions were about **removing** things.
+
+**The MediaPipe pivot.** The original design estimated cognitive load from facial landmarks using MediaPipe FaceMesh via the webcam. This was abandoned for two reasons: facial expression is a weak, noisy proxy for cognitive load (people concentrate with neutral faces, and expression varies far more across individuals than typing rhythm does), and FaceMesh is built for AR-style geometry tracking, not affective or cognitive state inference — using it for load estimation meant building on a tool designed for a different problem. Keystroke dynamics won because the signal is closer to the phenomenon: motor timing degrades measurably under load, and the capture is passive with no camera privacy cost.
+
+**Removing federated learning.** An early version included a federated learning component intended to aggregate model updates across users. It was removed entirely after review revealed it was treating raw ONNX model bytes as weight arrays — which is not how FL aggregation works — and, more fundamentally, that FL was solving a problem the project didn't have: with one user and 244 rows, there was nothing to federate. Deleting it simplified the architecture and was the right call; complexity that doesn't serve the data you actually have is a liability.
+
+**Fixing fabricated labels.** The first training pipeline contained hardcoded stub values and synthetic labels in the keystroke service. These were replaced with real task-based NASA-TLX self-ratings, which is why the dataset is small — every row is a genuinely labeled session. A small honest dataset with a mediocre R² was chosen over a large fabricated one with an impressive-looking score.
+
+**Fixing the evaluation.** The most consequential bug in the project was not in the model or the pipeline — it was in the evaluation. Reported performance (single-split R² 0.41, ungrouped 5-fold CV 0.30) looked respectable until the data geometry was examined: with one label per session, ungrouped splits let the model fingerprint sessions instead of predicting load. Rebuilding the evaluation as leave-one-session-out with pooled out-of-fold metrics, plus a predict-train-mean floor baseline, revealed the true generalization performance was negative R². The lesson: evaluation bugs fail silently by making numbers *better*, and the effective sample size of a dataset is set by its labels, not its rows.
+
+**Knowing when to stop.** After the corrected evaluation established that no model class can generalize from 7 labeled tasks, the options were (a) recruit participants for labeled typing sessions — a human-subjects data-collection effort with a cost far exceeding the project's remaining learning value — or (b) declare the pipeline complete. The project stopped at (b), deliberately.
 
 ---
 
@@ -53,30 +81,52 @@ All five diagnostic steps have been run: feature importance, hyperparameter tuni
 
 - Python 3.9+
 - Node 18+
-- `pynput` (`pip install pynput`)
+- macOS, Windows, or Linux (see the macOS permissions note below — it will bite you)
 
 ### 1. Run the agent
 
 ```bash
 cd CLMPython
+pip install -r requirements.txt
 python clm_agent.py
 ```
 
 The agent opens a WebSocket on `ws://localhost:8765` and streams raw keystroke events to the browser. Keep it running in the background while CLM is open.
+
+> **macOS:** `pynput` requires Accessibility permissions. Grant them under **System Settings → Privacy & Security → Accessibility** for your terminal app (Terminal, iTerm, VS Code, etc.). Without this the agent runs without error but captures **zero keystrokes** — this is the most common "it doesn't work" cause.
 
 ### 2. Run the frontend
 
 ```bash
 cd CLMFrontEnd
 npm install
-ng serve
+npx ng serve
 ```
 
-Open `http://localhost:4200`.
+Open `http://localhost:4200`. (`npx` runs the project-local Angular CLI — no global install needed.)
 
 ### 3. Calibrate
 
 On first launch, CLM runs a 30-second baseline calibration to learn your resting typing rhythm. Click "Start Calibration" and type normally until it completes.
+
+### Troubleshooting
+
+| Symptom | Cause |
+|---|---|
+| Gauge never moves, no errors anywhere | macOS Accessibility permissions not granted (see above) |
+| Frontend shows "agent disconnected" | `clm_agent.py` isn't running, or something else is bound to port 8765 |
+| `ng: command not found` | You ran `ng serve` instead of `npx ng serve` |
+
+---
+
+## Running the tests
+
+```bash
+cd CLMFrontEnd
+npx ng test
+```
+
+23 Jasmine unit tests cover session analysis (break detection, summary statistics) and keystroke feature extraction.
 
 ---
 
@@ -86,7 +136,7 @@ After collecting labeled data in Training Mode:
 
 1. Export your CSV from the Training Mode dashboard
 2. Place it in `training/data/`
-3. Run `python training/combine_and_train.py`
+3. Run `python training/combine_and_train.py` (dependencies in `training/requirements.txt`)
 4. Copy the output `keystroke_model.onnx` and `scaler_params.json` into `CLMFrontEnd/src/assets/models/`
 5. Reload the app
 
@@ -110,11 +160,16 @@ The training script also runs `StandardScaler` normalization and exports scaler 
 
 ---
 
-## What's next
+## Status and future directions
 
-- Multi-user data collection (current single-user limitation is the primary bottleneck for generalization)
-- Leave-one-user-out cross-validation once data from 3+ users is available
-- XGBoost comparison — likely to outperform RF on keystroke data at moderate data sizes
+CLM is **complete**. Development stopped deliberately after leakage-free evaluation established that the model cannot generalize from 7 labeled tasks, and that collecting more NASA-TLX-labeled sessions is a participant-recruitment problem whose cost exceeds the project's remaining learning value.
+
+If the project were continued, the roadmap would be:
+
+- **More labeled sessions, then more users** — the binding constraint is labeled-session count (effective n = 7), and after that, single-user data; both cap generalization long before model choice matters
+- **Leave-one-user-out cross-validation** — the honest generalization estimate once 3+ users exist, for the same reason leave-one-session-out is required within one user
+- **Window quality filtering** — near-idle 5-second windows (a handful of keystrokes) produce degenerate timing statistics and should be dropped before training
+- **Simpler models first** — Linear Regression already out-generalized the Random Forest at this sample size; more capacity (XGBoost, neural nets) is the wrong direction until the data grows by an order of magnitude
 
 ---
 
@@ -142,9 +197,17 @@ CLM/
 │           ├── data-logger.ts    CSV logging + TLX label application
 │           └── session-analysis.ts  Break detection + session summary stats
 ├── CLMPython/
-│   └── clm_agent.py      OS keystroke capture → WebSocket
+│   ├── clm_agent.py      OS keystroke capture → WebSocket
+│   └── requirements.txt
 └── training/
     ├── combine_and_train.py   Data prep + RF training + ONNX export
     ├── analyze_model.py       Diagnostic: feature importance, CV, error analysis
+    ├── requirements.txt
     └── data/                  Per-session labeled CSVs
 ```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
